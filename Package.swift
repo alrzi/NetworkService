@@ -18,7 +18,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "/Users/alrzi/Work/MyPackages/AsyncExtensions"),
+        .package(url: "https://github.com/alrzi/AsyncExtensions.git", from: "1.0.0"),
         .package(url: "https://github.com/pointfreeco/swift-clocks", from: "1.0.0"),
         .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.57.0")
     ],

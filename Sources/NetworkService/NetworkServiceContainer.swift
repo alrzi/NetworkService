@@ -97,7 +97,7 @@ private extension NetworkServiceContainer {
     ) -> some NetworkClientProtocol {
         var interceptors: [any RequestInterceptor] = []
         interceptors.append(contentsOf: authInterceptors)
-        interceptors.append(RetryInterceptor(maxRetries: configuration.maxRetries))        
+        interceptors.append(RetryInterceptor(maxRetries: configuration.maxRetries))
         interceptors.append(contentsOf: additionalInterceptors)
         interceptors.append(LoggingInterceptor(logLevel: configuration.logLevel))
 

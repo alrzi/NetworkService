@@ -1,6 +1,15 @@
 {
-  "originHash" : "41ffd7498bff112da26384a4ff5be897ad69696fa263082d5c0fb326589fd1f5",
+  "originHash" : "4b6af0c084b1f429ed3ba085562eda27f60f4a39ae99f18e53f02e388c13b021",
   "pins" : [
+    {
+      "identity" : "asyncextensions",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alrzi/AsyncExtensions.git",
+      "state" : {
+        "revision" : "1e60fa6a54e7588db1d84542f1bb35fecd59368c",
+        "version" : "1.0.0"
+      }
+    },
     {
       "identity" : "swift-clocks",
       "kind" : "remoteSourceControl",
