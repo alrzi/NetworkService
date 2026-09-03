@@ -34,11 +34,18 @@ public enum NetworkError: Error, Sendable, Equatable {
             return [.notConnectedToInternet, .networkConnectionLost, .timedOut, .cannotConnectToHost].contains(code)
 
         case .serverError(let statusCode):
-            return (500...599).contains(statusCode)
+            return [502, 503, 504].contains(statusCode)
 
         case .unauthorized, .decodingFailed, .requestCreationFailed, .unknown:
             return false
         }
+    }
+
+    public var isOffline: Bool {
+        if case .networkUnavailable = self {
+            return true
+        }
+        return false
     }
 
     /// Требуется ли обновление токена перед повтором

@@ -37,3 +37,14 @@ public extension RequestProtocol where Response == Void {
         ()
     }
 }
+
+// MARK: - AuthorizableRequest
+
+/// Запрос, который должен выполняться с токеном авторизации.
+public protocol AuthorizableRequest: CommonRequestProtocol { }
+
+public extension AuthorizableRequest {
+    var requiresAuth: Bool {
+        true
+    }
+}

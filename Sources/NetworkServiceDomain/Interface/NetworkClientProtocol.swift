@@ -15,4 +15,20 @@ public protocol NetworkClientProtocol: Sendable {
     func perform<Request: RequestProtocol>(
         _ request: Request
     ) async throws(NetworkError) -> Request.Response
+
+    func upload<Request: RequestProtocol>(
+        _ request: Request,
+        delegate: URLSessionTaskDelegate?
+    ) async throws(NetworkError) -> Request.Response
+
+    func upload<Request: RequestProtocol>(
+        _ request: Request,
+        fromFile fileURL: URL,
+        delegate: URLSessionTaskDelegate?
+    ) async throws(NetworkError) -> Request.Response
+
+    func performDownload<Request: DownloadRequestProtocol>(
+        _ request: Request,
+        delegate: URLSessionDownloadDelegate?
+    ) async throws(NetworkError) -> URL
 }

@@ -35,18 +35,16 @@ struct AuthInterceptor: RequestInterceptor {
             return .doNotRetry
         }
 
+        guard attempt < 1 else {
+            return .doNotRetry
+        }
+
         do {
-            // Принудительно обновляем токен
-            _ = try await sessionManager.getValidToken()
+            _ = try await sessionManager.refreshTokenForcefully()
             return .retry
         }
         catch {
-            // Refresh token невалиден — прекращаем попытки
-            if case .unauthorized = error {
-                return .doNotRetry
-            }
-            // Временная ошибка — можно повторить
-            return .retry
+            return .doNotRetry
         }
     }
 }

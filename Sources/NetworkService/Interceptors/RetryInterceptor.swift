@@ -33,6 +33,10 @@ struct RetryInterceptor: RequestInterceptor {
         error: NetworkError,
         attempt: Int
     ) async -> RetryDecision {
+        guard request.isSafeToRetryAutomatically else {
+            return .doNotRetry
+        }
+
         // Проверяем, можно ли повторить запрос
         guard error.isRetryable else {
             return .doNotRetry
@@ -59,6 +63,18 @@ struct RetryInterceptor: RequestInterceptor {
         catch {
             // Задача была отменена во время ожидания
             return .doNotRetry
+        }
+    }
+}
+
+private extension URLRequest {
+    var isSafeToRetryAutomatically: Bool {
+        switch httpMethod?.uppercased() ?? "GET" {
+        case "GET", "HEAD", "PUT", "DELETE", "OPTIONS":
+            return true
+
+        default:
+            return false
         }
     }
 }

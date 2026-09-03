@@ -12,14 +12,17 @@ import NetworkServiceDomain
 actor SessionManager {
     private let sessionProvider: any SessionCredentialsProvider
     private let tokenRefresher: TokenRefreshing
+    private let authTokenFactory: AuthTokenFactory
     private var refreshTask: Task<Result<String, NetworkError>, Never>?
 
     init(
         sessionProvider: any SessionCredentialsProvider,
-        tokenRefresher: TokenRefreshing
+        tokenRefresher: TokenRefreshing,
+        authTokenFactory: AuthTokenFactory = .init()
     ) {
         self.sessionProvider = sessionProvider
         self.tokenRefresher = tokenRefresher
+        self.authTokenFactory = authTokenFactory
     }
 
     /// Получает валидный токен доступа
@@ -30,6 +33,10 @@ actor SessionManager {
         }
 
         return try await refreshToken()
+    }
+
+    func refreshTokenForcefully() async throws(NetworkError) -> String {
+        try await refreshToken()
     }
 }
 
@@ -55,7 +62,10 @@ private extension SessionManager {
 
             do {
                 let response = try await tokenRefresher.refreshToken(refreshToken)
-                let token = AuthToken(from: response)
+                let token = authTokenFactory.make(
+                    from: response,
+                    fallbackRefreshToken: refreshToken
+                )
                 sessionProvider.updateToken(token)
                 return .success(token.accessToken)
             }

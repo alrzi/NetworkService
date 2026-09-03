@@ -79,9 +79,13 @@ struct RequestMock: RequestProtocol {
 
     var method: NetworkServiceDomain.HTTPMethod = .get
     var requiresAuth: Bool = false
+    var body: Data?
 
     func asURLRequest() throws(NetworkServiceDomain.RequestConvertibleError) -> URLRequest {
-        URLRequest(url: URL(string: "https://api.test")!)
+        var request = URLRequest(url: URL(string: "https://api.test")!)
+        request.httpMethod = method.rawValue
+        request.httpBody = body
+        return request
     }
 
     func response(from data: Data) throws -> UserMock {

@@ -16,7 +16,7 @@ public struct AuthToken: Sendable {
     /// Проверяет, истёк ли токен (с учётом буфера в 60 секунд)
     public var isExpired: Bool {
         guard let expirationDate else {
-            return true
+            return false
         }
         return Date() > expirationDate.addingTimeInterval(-60)
     }
@@ -29,17 +29,24 @@ public struct AuthToken: Sendable {
         return String(expirationDate.timeIntervalSince1970)
     }
 
-    /// Создаёт из ответа сервера
-    public init(from response: TokenResponse) {
-        self.accessToken = response.accessToken
-        self.refreshToken = response.refreshToken
-        self.expirationDate = response.expiresIn.map { Date().addingTimeInterval(TimeInterval($0)) }
+    public init(
+        accessToken: String,
+        refreshToken: String?,
+        expirationDate: Date?
+    ) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+        self.expirationDate = expirationDate
     }
 
     /// Создаёт из storage (timestamp от 1970 года)
     public init(accessToken: String, refreshToken: String?, expirationTimestamp: String?) {
-        self.accessToken = accessToken
-        self.refreshToken = refreshToken
-        self.expirationDate = expirationTimestamp.flatMap { TimeInterval($0) }.map { Date(timeIntervalSince1970: $0) }
+        self.init(
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            expirationDate: expirationTimestamp
+                .flatMap(TimeInterval.init)
+                .map(Date.init(timeIntervalSince1970:))
+        )
     }
 }
