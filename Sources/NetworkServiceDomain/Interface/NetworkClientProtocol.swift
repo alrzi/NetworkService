@@ -16,6 +16,13 @@ public protocol NetworkClientProtocol: Sendable {
         _ request: Request
     ) async throws(NetworkError) -> Request.Response
 
+    /// Открывает поток после проверки HTTP-статуса.
+    /// Ошибки чтения приходят при обходе потока. Для досрочного завершения вызовите `bytes.task.cancel()`.
+    func bytes(
+        for request: any RequestConvertible,
+        requiresAuth: Bool
+    ) async throws(NetworkError) -> (bytes: URLSession.AsyncBytes, response: HTTPURLResponse)
+
     func upload<Request: RequestProtocol>(
         _ request: Request,
         delegate: URLSessionTaskDelegate?
@@ -31,4 +38,12 @@ public protocol NetworkClientProtocol: Sendable {
         _ request: Request,
         delegate: URLSessionDownloadDelegate?
     ) async throws(NetworkError) -> URL
+}
+
+public extension NetworkClientProtocol {
+    func bytes(
+        for request: any RequestConvertible
+    ) async throws(NetworkError) -> (bytes: URLSession.AsyncBytes, response: HTTPURLResponse) {
+        try await bytes(for: request, requiresAuth: false)
+    }
 }

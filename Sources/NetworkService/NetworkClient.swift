@@ -37,8 +37,21 @@ final class NetworkClient: NetworkClientProtocol {
             request,
             requiresAuth: request.requiresAuth,
             operation: DataOperation()
-        ) { data in
+        ) { data, _ in
             try request.response(from: data)
+        }
+    }
+
+    func bytes(
+        for request: any RequestConvertible,
+        requiresAuth: Bool
+    ) async throws(NetworkError) -> (bytes: URLSession.AsyncBytes, response: HTTPURLResponse) {
+        try await execute(
+            request,
+            requiresAuth: requiresAuth,
+            operation: BytesOperation()
+        ) { bytes, response in
+            (bytes, response)
         }
     }
 
@@ -50,7 +63,7 @@ final class NetworkClient: NetworkClientProtocol {
             request,
             requiresAuth: request.requiresAuth,
             operation: UploadOperation(delegate: delegate)
-        ) { data in
+        ) { data, _ in
             try request.response(from: data)
         }
     }
@@ -64,7 +77,7 @@ final class NetworkClient: NetworkClientProtocol {
             request,
             requiresAuth: request.requiresAuth,
             operation: UploadFileOperation(fileURL: fileURL, delegate: delegate)
-        ) { data in
+        ) { data, _ in
             try request.response(from: data)
         }
     }
@@ -77,7 +90,7 @@ final class NetworkClient: NetworkClientProtocol {
             request,
             requiresAuth: request.requiresAuth,
             operation: DownloadOperation(delegate: delegate)
-        ) { temporaryURL in
+        ) { temporaryURL, _ in
             temporaryURL
         }
     }
@@ -90,7 +103,7 @@ private extension NetworkClient {
         _ request: Request,
         requiresAuth: Bool,
         operation: Operation,
-        transform: (Operation.Output) throws -> Response,
+        transform: (Operation.Output, HTTPURLResponse) throws -> Response,
         attempt: Int = 0
     ) async throws(NetworkError) -> Response {
         let baseURLRequest = try Result { try request.asURLRequest() }
@@ -117,16 +130,18 @@ private extension NetworkClient {
                     }
             }
 
-            _ = try response.validate()
-
             do {
-                return try transform(output)
+                let httpResponse = try response.validate()
+                return try transform(output, httpResponse)
             }
-            catch let error as DecodingError {
-                interceptors.compactMap { $0 as? LoggingInterceptor }
-                    .forEach {
-                        $0.logDecodingFailure(request: urlRequest, error: error, data: responseData)
-                    }
+            catch {
+                operation.discard(output)
+                if let error = error as? DecodingError {
+                    interceptors.compactMap { $0 as? LoggingInterceptor }
+                        .forEach {
+                            $0.logDecodingFailure(request: urlRequest, error: error, data: responseData)
+                        }
+                }
                 throw error
             }
         }
